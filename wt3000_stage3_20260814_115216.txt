@@ -1,0 +1,28 @@
+2026-08-14 11:52:16,053 INFO    wt3000.stage3      Protokolldatei: C:\Users\Persystems\PycharmProjects\PythonProject\wt3000_stage3_20260814_115216.txt
+2026-08-14 11:52:16,053 INFO    wt3000.stage3      Stufe 3 - eigene Item-Tabelle (33 Items)
+2026-08-14 11:52:16,163 INFO    wt3000.transport   Verbindung aufgebaut, Device-ID 0
+2026-08-14 11:52:16,170 INFO    wt3000.stage3      Verdrahtung: V3A3,P1W2 (bestimmt, ob SIGMA/SIGMB gueltig sind)
+2026-08-14 11:52:16,172 WARNING wt3000.stage3      Condition Bit 4 (FOV): Frequenzmessung im Fehler
+2026-08-14 11:52:16,172 WARNING wt3000.stage3      Condition Bit 7 (PLLE): kein Signal an der PLL-Quelle
+2026-08-14 11:52:16,186 INFO    wt3000.numeric     Item-Tabelle gelesen: NUMber=34, 34 Items
+2026-08-14 11:52:16,187 INFO    wt3000.itemspec    Backup-Bundle gesichert nach C:\Users\Persystems\PycharmProjects\PythonProject\wt3000_itemtable_backup_20260814_115216.json (34 Items + 0 Tail)
+2026-08-14 11:52:16,187 INFO    wt3000.itemspec    Write-Probe: :NUMeric:NORMal:ITEM1 U,1
+2026-08-14 11:52:16,281 INFO    wt3000.itemspec    Write-Probe erfolgreich (zurueckgelesen: U,1,TOT)
+2026-08-14 11:52:19,680 INFO    wt3000.itemspec    Item-Tabelle geschrieben: 33 Items, NUMber=33
+2026-08-14 11:52:19,693 INFO    wt3000.numeric     Item-Tabelle gelesen: NUMber=33, 33 Items
+2026-08-14 11:52:19,693 ERROR   wt3000.stage3      Verifikation: ITEM25: gesendet 'U,SIGMA', zurueckgelesen 'U,SIGM,TOT'
+2026-08-14 11:52:19,693 ERROR   wt3000.stage3      Verifikation: ITEM26: gesendet 'I,SIGMA', zurueckgelesen 'I,SIGM,TOT'
+2026-08-14 11:52:19,693 ERROR   wt3000.stage3      Verifikation: ITEM27: gesendet 'P,SIGMA', zurueckgelesen 'P,SIGM,TOT'
+2026-08-14 11:52:19,693 ERROR   wt3000.stage3      Verifikation: ITEM28: gesendet 'S,SIGMA', zurueckgelesen 'S,SIGM,TOT'
+2026-08-14 11:52:19,694 ERROR   wt3000.stage3      Verifikation: ITEM29: gesendet 'Q,SIGMA', zurueckgelesen 'Q,SIGM,TOT'
+2026-08-14 11:52:19,694 ERROR   wt3000.stage3      Verifikation: ITEM30: gesendet 'LAMBDA,SIGMA', zurueckgelesen 'LAMB,SIGM,TOT'
+2026-08-14 11:52:19,694 ERROR   wt3000.stage3      Abbruch: 6 Abweichung(en) beim Verifizieren der Tabelle
+2026-08-14 11:52:19,701 INFO    wt3000.numeric     Item-Tabelle gelesen: NUMber=33, 33 Items
+2026-08-14 11:52:23,201 INFO    wt3000.numeric     Item-Tabelle wiederhergestellt (35 Kommandos)
+2026-08-14 11:52:23,201 INFO    wt3000.stage3      Wiederherstellung abgeschlossen (35 Kommandos)
+2026-08-14 11:52:23,207 INFO    wt3000.numeric     Item-Tabelle gelesen: NUMber=34, 34 Items
+2026-08-14 11:52:23,208 INFO    wt3000.itemspec    Verifikation erfolgreich: alle 34 Items uebernommen
+2026-08-14 11:52:23,208 INFO    wt3000.stage3      Restore-Kontrolle: Ausgangszustand exakt wiederhergestellt
+2026-08-14 11:52:23,208 INFO    wt3000.transport   Verbindung geschlossen
+2026-08-14 11:52:23,208 INFO    wt3000.stage3      ==============================================================================
+2026-08-14 11:52:23,208 INFO    wt3000.stage3      Stufe 3 beendet. Backup: C:\Users\Persystems\PycharmProjects\PythonProject\wt3000_itemtable_backup_20260814_115216.json

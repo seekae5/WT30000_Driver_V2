@@ -1,0 +1,133 @@
+2026-08-14 12:24:36,502 INFO    wt3000.stage3      Protokolldatei: C:\Users\Persystems\PycharmProjects\PythonProject\wt3000_stage3_20260814_122436.txt
+2026-08-14 12:24:36,502 INFO    wt3000.stage3      Stufe 3 - eigene Item-Tabelle (33 Items)
+2026-08-14 12:24:36,612 INFO    wt3000.transport   Verbindung aufgebaut, Device-ID 0
+2026-08-14 12:24:36,618 INFO    wt3000.stage3      Verdrahtung: V3A3,P1W2 (bestimmt, ob SIGMA/SIGMB gueltig sind)
+2026-08-14 12:24:36,620 WARNING wt3000.stage3      Condition Bit 4 (FOV): Frequenzmessung im Fehler
+2026-08-14 12:24:36,620 WARNING wt3000.stage3      Condition Bit 7 (PLLE): kein Signal an der PLL-Quelle
+2026-08-14 12:24:36,637 INFO    wt3000.numeric     Item-Tabelle gelesen: NUMber=34, 34 Items
+2026-08-14 12:24:36,638 INFO    wt3000.itemspec    Backup-Bundle gesichert nach C:\Users\Persystems\PycharmProjects\PythonProject\wt3000_itemtable_backup_20260814_122436.json (34 Items + 0 Tail)
+2026-08-14 12:24:36,638 INFO    wt3000.itemspec    Write-Probe: :NUMeric:NORMal:ITEM1 U,1
+2026-08-14 12:24:36,788 INFO    wt3000.itemspec    Write-Probe erfolgreich (zurueckgelesen: U,1,TOT)
+2026-08-14 12:24:40,210 INFO    wt3000.itemspec    Item-Tabelle geschrieben: 33 Items, NUMber=33
+2026-08-14 12:24:40,217 INFO    wt3000.numeric     Item-Tabelle gelesen: NUMber=33, 33 Items
+2026-08-14 12:24:40,217 INFO    wt3000.itemspec    Verifikation erfolgreich: alle 33 Items uebernommen
+2026-08-14 12:24:41,221 INFO    wt3000.stage3      ------------------------------------------------------------------------------
+2026-08-14 12:24:41,221 INFO    wt3000.stage3      Lesedurchlauf 1
+2026-08-14 12:24:41,221 INFO    wt3000.stage3      Idx  Name           Item         Status     Wert
+2026-08-14 12:24:41,221 INFO    wt3000.stage3      1    U1             U,1          OK          0
+2026-08-14 12:24:41,221 INFO    wt3000.stage3      2    I1             I,1          OK          0
+2026-08-14 12:24:41,221 INFO    wt3000.stage3      3    P1             P,1          OK          0.00568091
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      4    S1             S,1          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      5    Q1             Q,1          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      6    LAMBDA1        LAMBDA,1     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      7    PHI1           PHI,1        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      8    FU1            FU,1         NO_DATA    <NO_DATA>
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      9    U2             U,2          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      10   I2             I,2          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      11   P2             P,2          OK          0.00532974
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      12   S2             S,2          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      13   Q2             Q,2          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      14   LAMBDA2        LAMBDA,2     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      15   PHI2           PHI,2        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      16   FU2            FU,2         NO_DATA    <NO_DATA>
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      17   U3             U,3          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      18   I3             I,3          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      19   P3             P,3          OK          0.00645426
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      20   S3             S,3          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      21   Q3             Q,3          OK          0
+2026-08-14 12:24:41,222 INFO    wt3000.stage3      22   LAMBDA3        LAMBDA,3     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      23   PHI3           PHI,3        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      24   FU3            FU,3         OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      25   USIGMA         U,SIGMA      OK          0
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      26   ISIGMA         I,SIGMA      OK          0
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      27   PSIGMA         P,SIGMA      OK          0.0110107
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      28   SSIGMA         S,SIGMA      OK          0
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      29   QSIGMA         Q,SIGMA      OK          0
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      30   LAMBDASIGMA    LAMBDA,SIGMA NO_DATA    <NO_DATA>
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      31   U4             U,4          OK          6.40513e-05
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      32   I4             I,4          OK          0.000576307
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      33   P4             P,4          OK          8.39017e-06
+2026-08-14 12:24:41,223 INFO    wt3000.stage3      Statusverteilung: OK=23, NO_DATA=3, OVERRANGE=7
+2026-08-14 12:24:42,228 INFO    wt3000.stage3      ------------------------------------------------------------------------------
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      Lesedurchlauf 2
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      Idx  Name           Item         Status     Wert
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      1    U1             U,1          OK          0
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      2    I1             I,1          OK          0
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      3    P1             P,1          OK          0.00591271
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      4    S1             S,1          OK          0
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      5    Q1             Q,1          OK          0
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      6    LAMBDA1        LAMBDA,1     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      7    PHI1           PHI,1        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      8    FU1            FU,1         NO_DATA    <NO_DATA>
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      9    U2             U,2          OK          0
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      10   I2             I,2          OK          0
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      11   P2             P,2          OK          0.00534079
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      12   S2             S,2          OK          0
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      13   Q2             Q,2          OK          0
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      14   LAMBDA2        LAMBDA,2     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      15   PHI2           PHI,2        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:42,229 INFO    wt3000.stage3      16   FU2            FU,2         NO_DATA    <NO_DATA>
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      17   U3             U,3          OK          0
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      18   I3             I,3          OK          0
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      19   P3             P,3          OK          0.00704274
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      20   S3             S,3          OK          0
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      21   Q3             Q,3          OK          0
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      22   LAMBDA3        LAMBDA,3     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      23   PHI3           PHI,3        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      24   FU3            FU,3         OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      25   USIGMA         U,SIGMA      OK          0
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      26   ISIGMA         I,SIGMA      OK          0
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      27   PSIGMA         P,SIGMA      OK          0.0112535
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      28   SSIGMA         S,SIGMA      OK          0
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      29   QSIGMA         Q,SIGMA      OK          0
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      30   LAMBDASIGMA    LAMBDA,SIGMA NO_DATA    <NO_DATA>
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      31   U4             U,4          OK          6.2157e-05
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      32   I4             I,4          OK          0.000563796
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      33   P4             P,4          OK          3.15577e-05
+2026-08-14 12:24:42,230 INFO    wt3000.stage3      Statusverteilung: OK=23, NO_DATA=3, OVERRANGE=7
+2026-08-14 12:24:43,234 INFO    wt3000.stage3      ------------------------------------------------------------------------------
+2026-08-14 12:24:43,234 INFO    wt3000.stage3      Lesedurchlauf 3
+2026-08-14 12:24:43,234 INFO    wt3000.stage3      Idx  Name           Item         Status     Wert
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      1    U1             U,1          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      2    I1             I,1          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      3    P1             P,1          OK          0.00399616
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      4    S1             S,1          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      5    Q1             Q,1          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      6    LAMBDA1        LAMBDA,1     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      7    PHI1           PHI,1        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      8    FU1            FU,1         NO_DATA    <NO_DATA>
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      9    U2             U,2          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      10   I2             I,2          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      11   P2             P,2          OK          0.00562392
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      12   S2             S,2          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      13   Q2             Q,2          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      14   LAMBDA2        LAMBDA,2     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      15   PHI2           PHI,2        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      16   FU2            FU,2         NO_DATA    <NO_DATA>
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      17   U3             U,3          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      18   I3             I,3          OK          0
+2026-08-14 12:24:43,235 INFO    wt3000.stage3      19   P3             P,3          OK          0.00762548
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      20   S3             S,3          OK          0
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      21   Q3             Q,3          OK          0
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      22   LAMBDA3        LAMBDA,3     OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      23   PHI3           PHI,3        OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      24   FU3            FU,3         OVERRANGE  <OVERRANGE>
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      25   USIGMA         U,SIGMA      OK          0
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      26   ISIGMA         I,SIGMA      OK          0
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      27   PSIGMA         P,SIGMA      OK          0.00962009
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      28   SSIGMA         S,SIGMA      OK          0
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      29   QSIGMA         Q,SIGMA      OK          0
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      30   LAMBDASIGMA    LAMBDA,SIGMA NO_DATA    <NO_DATA>
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      31   U4             U,4          OK          1.46092e-05
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      32   I4             I,4          OK          0.000260985
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      33   P4             P,4          OK          1.1631e-05
+2026-08-14 12:24:43,236 INFO    wt3000.stage3      Statusverteilung: OK=23, NO_DATA=3, OVERRANGE=7
+2026-08-14 12:24:43,249 INFO    wt3000.numeric     Item-Tabelle gelesen: NUMber=33, 33 Items
+2026-08-14 12:24:46,692 INFO    wt3000.numeric     Item-Tabelle wiederhergestellt (35 Kommandos)
+2026-08-14 12:24:46,692 INFO    wt3000.stage3      Wiederherstellung abgeschlossen (35 Kommandos)
+2026-08-14 12:24:46,698 INFO    wt3000.numeric     Item-Tabelle gelesen: NUMber=34, 34 Items
+2026-08-14 12:24:46,698 INFO    wt3000.itemspec    Verifikation erfolgreich: alle 34 Items uebernommen
+2026-08-14 12:24:46,698 INFO    wt3000.stage3      Restore-Kontrolle: Ausgangszustand exakt wiederhergestellt
+2026-08-14 12:24:46,699 INFO    wt3000.transport   Verbindung geschlossen
+2026-08-14 12:24:46,699 INFO    wt3000.stage3      ==============================================================================
+2026-08-14 12:24:46,699 INFO    wt3000.stage3      Stufe 3 beendet. Backup: C:\Users\Persystems\PycharmProjects\PythonProject\wt3000_itemtable_backup_20260814_122436.json
