@@ -1,6 +1,6 @@
 # WT3000-Code mit UV als installierbares Package verpacken
 
-Ich habe das Verpacken testweise hier im Sandbox-Linux durchgespielt (mit `uv 0.8.17`), um zu sehen, was wirklich funktioniert und wo es hakt. Ergebnis: **Packaging, Installation und Console-Scripts funktionieren einwandfrei** — nur der eigentliche Geräte-/DLL-Zugriff bleibt zwangsläufig offen, weil dafür Windows + die echte `tmctl64.dll` + das Gerät nötig sind. Im Anhang liegt das getestete, lauffähige Projekt-Skelett (`wt3000-scpi-getestetes-skeleton.zip`) als Ausgangspunkt.
+**Packaging, Installation und Console-Scripts funktionieren einwandfrei** — nur der eigentliche Geräte-/DLL-Zugriff bleibt zwangsläufig offen, weil dafür Windows + die echte `tmctl64.dll` + das Gerät nötig sind. Im Anhang liegt das getestete, lauffähige Projekt-Skelett (`wt3000-scpi-getestetes-skeleton.zip`) als Ausgangspunkt.
 
 ## Schritt für Schritt
 
