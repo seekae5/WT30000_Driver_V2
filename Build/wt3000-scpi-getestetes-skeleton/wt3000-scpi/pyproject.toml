@@ -1,0 +1,20 @@
+[project]
+name = "wt3000-scpi"
+version = "0.1.0"
+description = "WT3000 SCPI/TMCTL Testautomatisierung (Testpackaging)"
+readme = "README.md"
+authors = [
+    { name = "Luca", email = "luca.starnberg+anthropic@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+wt3000-stage2 = "wt3000_scpi.stage2_read_numeric:main"
+wt3000-stage3 = "wt3000_scpi.stage3_own_itemtable:main"
+wt3000-stage4 = "wt3000_scpi.stage4_measure:main"
+wt3000-stage5 = "wt3000_scpi.stage5_input_config:main"
+
+[build-system]
+requires = ["uv_build>=0.8.17,<0.9.0"]
+build-backend = "uv_build"

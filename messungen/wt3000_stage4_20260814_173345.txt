@@ -1,0 +1,3 @@
+2026-08-14 17:33:45,274 INFO    wt3000.stage4      Protokolldatei: C:\Users\Persystems\PycharmProjects\PythonProject\messungen\wt3000_stage4_20260814_173345.txt
+2026-08-14 17:33:45,275 INFO    wt3000.stage4      Stufe 4 - Messschleife (31 Items, Intervall 1.000 s)
+2026-08-14 17:33:55,284 ERROR   wt3000.stage4      Verbindungsfehler: TmcInitialize fehlgeschlagen, TMCTL-Fehlercode 0x00000001 (Adresse=192.168.10.20)

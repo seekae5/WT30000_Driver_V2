@@ -1,0 +1,22 @@
+2026-08-17 10:48:48,161 INFO    wt3000.stage5      Protokolldatei: C:\Users\Persystems\PycharmProjects\PythonProject\konfiguration\wt3000_stage5_20260817_104848.txt
+2026-08-17 10:48:48,161 INFO    wt3000.stage5      Stufe 5 - Eingangskonfiguration erfassen (nur Lesen)
+2026-08-17 10:48:48,314 INFO    wt3000.transport   Verbindung aufgebaut, Device-ID 0
+2026-08-17 10:48:48,481 INFO    wt3000.input       Eingangskonfiguration gesichert: CF3, Wiring V3A3,P1W2, RATE 1.000 s, 4 Elemente
+2026-08-17 10:48:48,481 INFO    wt3000.input       ------------------------------------------------------------------------------
+2026-08-17 10:48:48,481 INFO    wt3000.input       Crest-Faktor 3 | Wiring V3A3,P1W2 | INDependent OFF | RATE 1.000 s
+2026-08-17 10:48:48,482 INFO    wt3000.input       El  Typ    U-Range    I-Range          Auto  LineFilt  FreqFilt Sync   Scaling 
+2026-08-17 10:48:48,482 INFO    wt3000.input       1   2A     1000 V     EXT 10 V         --    OFF       OFF      U3     ON VT1/CT1
+2026-08-17 10:48:48,482 INFO    wt3000.input       2   2A     1000 V     EXT 10 V         --    OFF       OFF      U3     ON VT1/CT1
+2026-08-17 10:48:48,482 INFO    wt3000.input       3   2A     1000 V     EXT 10 V         --    OFF       OFF      U3     ON VT1/CT1
+2026-08-17 10:48:48,482 INFO    wt3000.input       4   2A     15 V       0.005 A          UI    OFF       OFF      U3     ON VT1/CT2000
+2026-08-17 10:48:48,482 INFO    wt3000.stage5      Wiring-Units:
+2026-08-17 10:48:48,484 INFO    wt3000.stage5        SIGMA  V3A3  -> Elemente 1, 2, 3
+2026-08-17 10:48:48,484 INFO    wt3000.stage5        SIGMB  P1W2  -> Elemente 4
+2026-08-17 10:48:48,485 INFO    wt3000.input       Eingangskonfiguration gesichert nach C:\Users\Persystems\PycharmProjects\PythonProject\konfiguration\wt3000_inputconfig_20260817_104848.json
+2026-08-17 10:48:48,485 INFO    wt3000.stage5      Rohabzug von ':INPut?' gesichert nach C:\Users\Persystems\PycharmProjects\PythonProject\konfiguration\wt3000_inputdump_20260817_104848.txt
+2026-08-17 10:48:48,619 INFO    wt3000.input       Eingangskonfiguration gesichert: CF3, Wiring V3A3,P1W2, RATE 1.000 s, 4 Elemente
+2026-08-17 10:48:48,619 INFO    wt3000.stage5      Gegenprobe erfolgreich: Snapshot bildet den Ist-Zustand exakt ab
+2026-08-17 10:48:48,621 INFO    wt3000.transport   Verbindung geschlossen
+2026-08-17 10:48:48,621 INFO    wt3000.stage5      ==============================================================================
+2026-08-17 10:48:48,621 INFO    wt3000.stage5      Snapshot:  C:\Users\Persystems\PycharmProjects\PythonProject\konfiguration\wt3000_inputconfig_20260817_104848.json
+2026-08-17 10:48:48,621 INFO    wt3000.stage5      Rohabzug:  C:\Users\Persystems\PycharmProjects\PythonProject\konfiguration\wt3000_inputdump_20260817_104848.txt
