@@ -33,9 +33,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterator
 
-from wt3000_common import canonical_scope, values_match
+from wt3000_common import canonical_scope  # UEBERARBEITET (RANGEIO-2): values_match
+                                           # wird nicht mehr direkt gebraucht -
+                                           # Bereiche vergleicht ranges_match().
 from wt3000_core import WTError
-from wt3000_rangeio import Quantity, RangeAccess
+# UEBERARBEITET (RANGEIO-2): RangeValue/ranges_match tragen die Eingangsart mit.
+from wt3000_rangeio import Quantity, RangeAccess, RangeValue, ranges_match
 
 _log = logging.getLogger("wt3000.ranging")
 
@@ -54,15 +57,30 @@ class RangeSpec:
 
     scope: Elementnummer, 'SIGMA', 'SIGMB' oder 'ALL'.
     Ein fester Bereich impliziert Autorange AUS - das erledigt apply_plan().
+
+    UEBERARBEITET (RANGEIO-2): sensor=True bezeichnet den Bereich des externen
+    Stromsensoreingangs. Der Wert ist dann eine SPANNUNG in Volt. Ohne dieses
+    Kennzeichen liesse sich ein Sensorelement nicht widerspruchsfrei
+    beschreiben - und ein Amperewert an einem Sensoreingang waere keine
+    Rundungsfrage, sondern eine Fehlkonfiguration.
     """
 
     quantity: Quantity
     scope: str | int
     value: float
+    sensor: bool = False
+
+    @property
+    def range_value(self) -> RangeValue:
+        """Wert und Eingangsart als RangeValue."""
+        return RangeValue(self.value, self.sensor)
 
     def describe(self) -> str:
         """Lesbare Kurzform fuer Protokolle."""
-        return f"{self.quantity.range_label} {canonical_scope(self.scope)} = {self.value:g}"
+        return (
+            f"{self.quantity.range_label} {canonical_scope(self.scope)} = "
+            f"{self.range_value.describe(self.quantity)}"
+        )
 
 
 @dataclass(frozen=True)
@@ -118,18 +136,44 @@ class RangePlan:
         if self.is_empty():
             raise WTError("Leerer RangePlan")
 
-        fixed: dict[tuple[Quantity, int], float] = {}
+        # UEBERARBEITET (RANGEIO-2): Der Konfliktschluessel traegt jetzt Wert UND
+        # Eingangsart. 10 A direkt und 10 V am Sensor sind nicht derselbe Zustand.
+        fixed: dict[tuple[Quantity, int], RangeValue] = {}
         for spec in self.ranges:
             if spec.value <= 0:
                 raise WTError(f"Ungueltiger Bereichswert: {spec.describe()}")
+            if spec.sensor and spec.quantity is Quantity.VOLTAGE:
+                raise WTError(
+                    f"Ungueltig: {spec.describe()} - einen Sensoreingang gibt es "
+                    "nur fuer den Strompfad"
+                )
             for element in access.expand_scope(spec.scope):
                 key = (spec.quantity, element)
-                if key in fixed and not values_match(fixed[key], spec.value):
+                if key in fixed and not ranges_match(fixed[key], spec.range_value):
                     raise WTError(
                         f"Widerspruch: {spec.quantity.label} Element {element} wird auf "
-                        f"{fixed[key]:g} und auf {spec.value:g} gesetzt"
+                        f"{fixed[key].describe(spec.quantity)} und auf "
+                        f"{spec.range_value.describe(spec.quantity)} gesetzt"
                     )
-                fixed[key] = spec.value
+                fixed[key] = spec.range_value
+
+        # UEBERARBEITET (RANGEIO-2): Eingangsart gegen das Geraet pruefen, BEVOR
+        # das erste Set-Kommando faellt. Elemente 1-3 haengen an externen
+        # Stromsensoren; ein Amperewert wuerde dort die Sensorbeschaltung aus
+        # der Konfiguration werfen. Kostet hoechstens vier Abfragen und faellt
+        # sonst erst am bereits veraenderten Geraet auf.
+        for (quantity, element), wanted in fixed.items():
+            if quantity is not Quantity.CURRENT:
+                continue
+            present = access.get_range(quantity, element)
+            if present.sensor != wanted.sensor:
+                ist = "externer Sensoreingang" if present.sensor else "Direkteingang"
+                soll = "Sensorbereich" if wanted.sensor else "Direktbereich"
+                raise WTError(
+                    f"Element {element} steht auf {ist}, der Plan gibt einen "
+                    f"{soll} vor ({wanted.describe(quantity)}). Die Eingangsart "
+                    "wird von diesem Modul bewusst nicht umgeschaltet."
+                )
 
         auto_on: dict[tuple[Quantity, int], bool] = {}
         for spec in self.autos:
@@ -158,17 +202,25 @@ class RangePlan:
 
 @dataclass(frozen=True)
 class ElementRangeState:
-    """Bereichszustand eines einzelnen Elements."""
+    """Bereichszustand eines einzelnen Elements.
+
+    UEBERARBEITET (RANGEIO-2): Die Bereiche sind RangeValue statt float und
+    fuehren damit die Eingangsart mit.
+    """
 
     element: int
-    voltage_range: float
+    voltage_range: RangeValue
     voltage_auto: bool
-    current_range: float
+    current_range: RangeValue
     current_auto: bool
 
-    def value_of(self, quantity: Quantity) -> float:
-        """Bereichswert der gewuenschten Messgroesse."""
+    def range_of(self, quantity: Quantity) -> RangeValue:
+        """Bereich der gewuenschten Messgroesse inklusive Eingangsart."""
         return self.voltage_range if quantity is Quantity.VOLTAGE else self.current_range
+
+    def value_of(self, quantity: Quantity) -> float:
+        """Reiner Zahlenwert des Bereichs - ohne Aussage zur Eingangsart."""
+        return self.range_of(quantity).value
 
     def auto_of(self, quantity: Quantity) -> bool:
         """Autorange-Zustand der gewuenschten Messgroesse."""
@@ -217,14 +269,16 @@ class RangeBackup:
 
     def log_summary(self) -> None:
         """Gesicherten Zustand tabellarisch protokollieren."""
-        _log.info("%-8s %14s %6s %14s %6s", "Element", "U-Bereich", "U-Auto", "I-Bereich", "I-Auto")
+        _log.info("%-8s %16s %6s %16s %6s", "Element", "U-Bereich", "U-Auto", "I-Bereich", "I-Auto")
         for s in self.states:
+            # UEBERARBEITET (RANGEIO-2): Einheit und Eingangsart mit ausgeben -
+            # '10 V (Sensor)' ist etwas anderes als '10 A'.
             _log.info(
-                "%-8d %14g %6s %14g %6s",
+                "%-8d %16s %6s %16s %6s",
                 s.element,
-                s.voltage_range,
+                s.voltage_range.describe(Quantity.VOLTAGE),
                 "EIN" if s.voltage_auto else "AUS",
-                s.current_range,
+                s.current_range.describe(Quantity.CURRENT),
                 "EIN" if s.current_auto else "AUS",
             )
 
@@ -238,9 +292,12 @@ class RangeBackup:
             "states": [
                 {
                     "element": s.element,
-                    "voltage_range": s.voltage_range,
+                    "voltage_range": s.voltage_range.value,
                     "voltage_auto": s.voltage_auto,
-                    "current_range": s.current_range,
+                    "current_range": s.current_range.value,
+                    # UEBERARBEITET (RANGEIO-2): Eingangsart mitschreiben, sonst
+                    # laesst sich ein Sensorbereich nicht korrekt zurueckstellen.
+                    "current_sensor": s.current_range.sensor,
                     "current_auto": s.current_auto,
                 }
                 for s in self.states
@@ -252,11 +309,15 @@ class RangeBackup:
         """Gegenstueck zu to_dict()."""
         return cls(
             states=tuple(
+                # UEBERARBEITET (RANGEIO-2): 'current_sensor' fehlt in aelteren
+                # Backupdateien - dort galt implizit der Direkteingang.
                 ElementRangeState(
                     element=int(d["element"]),
-                    voltage_range=float(d["voltage_range"]),
+                    voltage_range=RangeValue(float(d["voltage_range"])),
                     voltage_auto=bool(d["voltage_auto"]),
-                    current_range=float(d["current_range"]),
+                    current_range=RangeValue(
+                        float(d["current_range"]), bool(d.get("current_sensor", False))
+                    ),
                     current_auto=bool(d["current_auto"]),
                 )
                 for d in data["states"]
@@ -287,10 +348,15 @@ class RangeBackup:
                 problems.append(f"Element {mine.element} fehlt im Vergleichszustand")
                 continue
             for quantity in Quantity:
-                if not values_match(mine.value_of(quantity), theirs.value_of(quantity), tolerance):
+                # UEBERARBEITET (RANGEIO-2): Ein Wechsel der Eingangsart ist
+                # immer eine Abweichung, auch bei gleichem Zahlenwert.
+                if not ranges_match(
+                    mine.range_of(quantity), theirs.range_of(quantity), tolerance
+                ):
                     problems.append(
                         f"Element {mine.element}: {quantity.range_label} "
-                        f"{mine.value_of(quantity):g} -> {theirs.value_of(quantity):g}"
+                        f"{mine.range_of(quantity).describe(quantity)} -> "
+                        f"{theirs.range_of(quantity).describe(quantity)}"
                     )
                 if mine.auto_of(quantity) != theirs.auto_of(quantity):
                     problems.append(
@@ -326,17 +392,22 @@ def probe_write_capability(access: RangeAccess, backup: RangeBackup) -> None:
     ':INPut' noetig ist - fuer ':NUMeric' ist es das nachweislich nicht.
     """
     element = access.elements[0]
-    current = backup.state_of(element).value_of(Quantity.VOLTAGE)
+    # UEBERARBEITET (RANGEIO-2): RangeValue statt float. Der Spannungspfad kennt
+    # keinen Sensoreingang; das Kennzeichen wird trotzdem durchgereicht, damit
+    # hier keine zweite Sonderregel entsteht.
+    current = backup.state_of(element).range_of(Quantity.VOLTAGE)
 
-    _log.info("Schreibprobe: Element %d wird auf seinen eigenen Wert %g gesetzt",
-              element, current)
+    _log.info("Schreibprobe: Element %d wird auf seinen eigenen Wert %s gesetzt",
+              element, current.describe(Quantity.VOLTAGE))
     access.set_range(Quantity.VOLTAGE, element, current)
 
     readback = access.get_range(Quantity.VOLTAGE, element)
-    if not values_match(current, readback):
+    if not ranges_match(current, readback):
         raise WTError(
-            f"Schreibprobe fehlgeschlagen: gesendet {current:g}, zurueckgelesen "
-            f"{readback:g}. Moegliche Ursache: die INPut-Gruppe verlangt "
+            f"Schreibprobe fehlgeschlagen: gesendet "
+            f"{current.describe(Quantity.VOLTAGE)}, zurueckgelesen "
+            f"{readback.describe(Quantity.VOLTAGE)}. Moegliche Ursache: die "
+            "INPut-Gruppe verlangt "
             "':COMMunicate:REMote ON' - dann use_remote=True in WTConfig setzen."
         )
     _log.info("Schreibprobe erfolgreich - die INPut-Gruppe nimmt Set-Kommandos an")
@@ -366,7 +437,8 @@ def apply_plan(access: RangeAccess, plan: RangePlan) -> int:
         written += 1
 
     for spec in plan.ranges:
-        access.set_range(spec.quantity, spec.scope, spec.value)
+        # UEBERARBEITET (RANGEIO-2): Eingangsart mitgeben.
+        access.set_range(spec.quantity, spec.scope, spec.range_value)
         written += 1
 
     for spec in plan.autos:
@@ -401,11 +473,13 @@ def verify_plan(
     for spec in plan.ranges:
         for element in access.expand_scope(spec.scope):
             actual = access.get_range(spec.quantity, element)
-            if values_match(spec.value, actual, tolerance):
+            # UEBERARBEITET (RANGEIO-2): Vergleich schliesst die Eingangsart ein.
+            if ranges_match(spec.range_value, actual, tolerance):
                 continue
             message = (
                 f"{spec.quantity.range_label} Element {element}: angefordert "
-                f"{spec.value:g}, eingestellt {actual:g}"
+                f"{spec.range_value.describe(spec.quantity)}, eingestellt "
+                f"{actual.describe(spec.quantity)}"
             )
             if allow_snapping:
                 _log.warning("Geraet hat den Wert angepasst - %s", message)
@@ -448,15 +522,18 @@ def restore_ranges(access: RangeAccess, backup: RangeBackup, force: bool = False
         # Erst entscheiden, was ueberhaupt anzufassen ist. Die Entscheidung
         # muss VOR dem ersten Schreibkommando fallen, sonst vergleicht Schritt 3
         # gegen einen Zustand, den Schritt 1 bereits veraendert hat.
-        plan_per_element: list[tuple[int, float, bool, bool, bool]] = []
+        # UEBERARBEITET (RANGEIO-2): Zielwert ist ein RangeValue - ein
+        # Sensorbereich wird als 'EXTernal,<Volt>' zurueckgeschrieben und nicht
+        # als Amperewert.
+        plan_per_element: list[tuple[int, RangeValue, bool, bool, bool]] = []
         for state in backup.states:
-            target_range = state.value_of(quantity)
+            target_range = state.range_of(quantity)
             target_auto = state.auto_of(quantity)
             if current is None:
                 need_range, need_auto = True, True
             else:
                 now = current.state_of(state.element)
-                need_range = not values_match(target_range, now.value_of(quantity))
+                need_range = not ranges_match(target_range, now.range_of(quantity))
                 need_auto = now.auto_of(quantity) != target_auto
             plan_per_element.append(
                 (state.element, target_range, target_auto, need_range, need_auto)

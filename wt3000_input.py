@@ -303,16 +303,47 @@ def _float_close(expected: float, actual: float, rel: float = 1e-3) -> bool:
     return abs(expected - actual) <= rel * abs(expected)
 
 
-def _token_match(requested: str, actual: str) -> bool:
-    """Geraeteantwort in Kurzform gegen die gesendete Langform pruefen.
+# UEBERARBEITET (INPUT-13): _token_match() ist ersatzlos entfallen.
+#
+# Bisher gab es ZWEI Regeln fuer dieselben Aufzaehlungswerte: InputSnapshot.diff()
+# verglich sync_source/voltage_mode/current_mode exakt, restore_input_snapshot()
+# und die Rueckleseproben der Setter praefixtolerant. Bei Soll 'EXTERNAL' und Ist
+# 'EXT' meldete diff() eine Abweichung, restore sah keinen Handlungsbedarf, und
+# die Schlusskontrolle warf VerificationError ueber einen Zustand, den sie selbst
+# fuer korrekt hielt - eine Wiederherstellung, die nie konvergiert.
+#
+# Ab jetzt gilt fuer Vergleich UND Wiederherstellung dieselbe Regel: beide Seiten
+# werden gegen die bekannte Aufzaehlung auf ihre LANGFORM normalisiert und dann
+# exakt verglichen. Freies Praefixmatching wird bewusst nicht verwendet - es
+# wuerde bei mehrdeutigen Kurzformen ('U' passt auf U1..U4) still das falsche
+# Element treffen; genau die Falle, die in Stufe 3 bei SIGMA/SIGMB gefunden wurde.
 
-    VERBose ist aus, das Geraet antwortet in SCPI-Kurzform ('EXT' statt
-    'EXTERNAL'). Wie in wt3000_itemspec._functions_compatible() laeuft die
-    Pruefung nur in EINE Richtung: die Antwort muss Praefix der Anforderung
-    sein, nicht umgekehrt.
+# Langformen der Aufzaehlungen, gegen die normalisiert wird.
+SYNC_TOKENS: frozenset[str] = frozenset(s.value.upper() for s in SyncSource)
+MODE_TOKENS: frozenset[str] = frozenset(m.value.upper() for m in MeasMode)
+
+
+def canonical_enum_token(text: str, allowed: frozenset[str]) -> str:
+    """Kurzform der Geraeteantwort auf die Langform der Aufzaehlung abbilden.
+
+    'EXT' -> 'EXTERNAL', 'EXTERNAL' -> 'EXTERNAL', 'I3' -> 'I3'.
+
+    Ist die Kurzform mehrdeutig (mehrere Kandidaten) oder unbekannt, bleibt der
+    Text unveraendert. Der Vergleich schlaegt dann an - lieber eine gemeldete
+    Abweichung als eine stillschweigend falsche Zuordnung.
     """
-    req, act = requested.strip().upper(), actual.strip().upper()
-    return req == act or req.startswith(act)
+    token = strip_header(text).upper()
+    if token in allowed:
+        return token
+    candidates = [value for value in allowed if value.startswith(token)]
+    if len(candidates) == 1:
+        return candidates[0]
+    return token
+
+
+def enum_match(wanted: str, actual: str, allowed: frozenset[str]) -> bool:
+    """Einzige Vergleichsregel fuer Aufzaehlungswerte (Sync-Quelle, Messmodus)."""
+    return canonical_enum_token(wanted, allowed) == canonical_enum_token(actual, allowed)
 
 
 def _nearest(value: float, allowed: Iterable[float]) -> float:
@@ -874,7 +905,8 @@ class InputConfig:
             _BASE_SYNC,
             target,
             token,
-            lambda actual: _token_match(upper, actual),
+            # UEBERARBEITET (INPUT-13): dieselbe Regel wie diff()/restore.
+            lambda actual: enum_match(upper, actual, SYNC_TOKENS),
             "Sync-Quelle setzen",
         )
 
@@ -950,7 +982,8 @@ class InputConfig:
             base,
             target,
             token,
-            lambda actual: _token_match(token, actual),
+            # UEBERARBEITET (INPUT-13): dieselbe Regel wie diff()/restore.
+            lambda actual: enum_match(token, actual, MODE_TOKENS),
             f"{label} setzen",
         )
 
@@ -1263,13 +1296,19 @@ def _diff_element(wanted: ElementSettings, got: ElementSettings) -> list[str]:
         if a != b:
             problems.append(f"{prefix} {name}: soll {a}, ist {b}")
 
+    # UEBERARBEITET (INPUT-13): Aufzaehlungswerte werden nicht mehr exakt
+    # verglichen, sondern ueber dieselbe Regel wie in restore_input_snapshot().
+    def compare_enum(name: str, a: str, b: str, allowed: frozenset[str]) -> None:
+        if not enum_match(a, b, allowed):
+            problems.append(f"{prefix} {name}: soll {a}, ist {b}")
+
     compare_float("U-Range", wanted.voltage_range, got.voltage_range)
     compare_plain("U-Auto", wanted.voltage_auto, got.voltage_auto)
-    compare_plain("U-Mode", wanted.voltage_mode, got.voltage_mode)
+    compare_enum("U-Mode", wanted.voltage_mode, got.voltage_mode, MODE_TOKENS)
     compare_float("I-Range direkt", wanted.current_direct, got.current_direct)
     compare_float("I-Range Sensor", wanted.current_sensor, got.current_sensor)
     compare_plain("I-Auto", wanted.current_auto, got.current_auto)
-    compare_plain("I-Mode", wanted.current_mode, got.current_mode)
+    compare_enum("I-Mode", wanted.current_mode, got.current_mode, MODE_TOKENS)
     compare_float("SRATio", wanted.sensor_ratio, got.sensor_ratio)
     compare_plain("Line-Filter", wanted.line_filter, got.line_filter)
     compare_plain("Freq-Filter", wanted.frequency_filter, got.frequency_filter)
@@ -1277,13 +1316,34 @@ def _diff_element(wanted: ElementSettings, got: ElementSettings) -> list[str]:
     compare_float("VT", wanted.vt_ratio, got.vt_ratio)
     compare_float("CT", wanted.ct_ratio, got.ct_ratio)
     compare_float("SFACtor", wanted.power_factor, got.power_factor)
-    compare_plain("Sync", wanted.sync_source, got.sync_source)
+    compare_enum("Sync", wanted.sync_source, got.sync_source, SYNC_TOKENS)
     return problems
 
 
 # ---------------------------------------------------------------------------
 # Wiederherstellung
 # ---------------------------------------------------------------------------
+
+
+# UEBERARBEITET (INPUT-13): Der Modus liegt in GROUP_MODE, die der Aufrufer
+# nicht zwingend freigegeben hat. Statt die Wiederherstellung mitten im Lauf
+# abzubrechen, wird die Sperre als klare Meldung protokolliert; die
+# Schlusskontrolle meldet die verbleibende Abweichung ohnehin.
+def _restore_mode(
+    setter: Callable[[str, int], None], value: str, element: int, label: str
+) -> int:
+    """Messmodus eines Elements zurueckstellen. Rueckgabe: gesendete Kommandos."""
+    try:
+        setter(value, element)
+    except ConfigLocked:
+        _log.error(
+            "%s Element %d weicht ab, GROUP_MODE ist aber gesperrt. Aufrufer muss "
+            "'with config.unlocked(GROUP_MODE, ...)' verwenden.",
+            label,
+            element,
+        )
+        return 0
+    return 1
 
 
 def restore_input_snapshot(config: InputConfig, snapshot: InputSnapshot) -> int:
@@ -1294,12 +1354,17 @@ def restore_input_snapshot(config: InputConfig, snapshot: InputSnapshot) -> int:
     Fehlerfall unnoetig lang und riskant.
 
     Reihenfolge: Crest-Faktor -> Wiring -> Bereiche -> Auto-Range -> Filter ->
-    Skalierungsfaktoren -> Skalierung EIN/AUS -> Sync -> Rate. Crest-Faktor und
-    Wiring zuerst, weil sie die zulaessigen Bereiche und die Unit-Zuordnung
-    bestimmen.
+    Skalierungsfaktoren -> Skalierung EIN/AUS -> Sync -> Messmodus -> Rate.
+    Crest-Faktor und Wiring zuerst, weil sie die zulaessigen Bereiche und die
+    Unit-Zuordnung bestimmen.
+
+    UEBERARBEITET (INPUT-13): Vergleich und Wiederherstellung benutzen fuer
+    Aufzaehlungswerte jetzt dieselbe Regel (enum_match), und der Messmodus wird
+    tatsaechlich zurueckgestellt. Vorher konnte diff() eine Abweichung melden,
+    die kein Schreibpfad je aufgeloest haette.
 
     Der Aufrufer muss die betroffenen Gruppen vorher freigeben, z.B.:
-        with config.unlocked(GROUP_RANGE, GROUP_FILTER, GROUP_RATE):
+        with config.unlocked(GROUP_RANGE, GROUP_FILTER, GROUP_MODE, GROUP_RATE):
             restore_input_snapshot(config, backup)
     """
     current = InputSnapshot.capture(config)
@@ -1379,9 +1444,30 @@ def restore_input_snapshot(config: InputConfig, snapshot: InputSnapshot) -> int:
             config.set_scaling_state(wanted.scaling, element)
             written += 1
 
-        if got is None or not _token_match(wanted.sync_source, got.sync_source):
+        # UEBERARBEITET (INPUT-13): identische Regel wie in _diff_element().
+        if got is None or not enum_match(
+            wanted.sync_source, got.sync_source, SYNC_TOKENS
+        ):
             config.set_sync_source(wanted.sync_source, element)
             written += 1
+
+        # UEBERARBEITET (INPUT-13): Der Messmodus wurde bisher verglichen, aber
+        # nie zurueckgestellt. Eine Abweichung haette die Schlusskontrolle
+        # unweigerlich zum Anschlag gebracht, ohne dass irgendein Schreibpfad sie
+        # haette aufloesen koennen. Die Gruppe GROUP_MODE muss der Aufrufer
+        # freigeben; ist sie gesperrt, wird das hier benannt statt verschleiert.
+        if got is None or not enum_match(
+            wanted.voltage_mode, got.voltage_mode, MODE_TOKENS
+        ):
+            written += _restore_mode(
+                config.set_voltage_mode, wanted.voltage_mode, element, "Spannungsmodus"
+            )
+        if got is None or not enum_match(
+            wanted.current_mode, got.current_mode, MODE_TOKENS
+        ):
+            written += _restore_mode(
+                config.set_current_mode, wanted.current_mode, element, "Strommodus"
+            )
 
     if not _float_close(snapshot.update_rate_s, current.update_rate_s):
         config.set_update_rate(snapshot.update_rate_s)

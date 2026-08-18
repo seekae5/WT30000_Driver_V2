@@ -23,7 +23,9 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass          # UEBERARBEITET (RANGEIO-2)
 from enum import Enum
+from typing import Final                   # UEBERARBEITET (RANGEIO-2)
 
 from wt3000_common import (
     ALL,
@@ -37,6 +39,7 @@ from wt3000_common import (
     parse_nr3,
     scope_suffix,
     strip_response_header,
+    values_match,                          # UEBERARBEITET (RANGEIO-2)
 )
 from wt3000_core import WTError, WTSession
 
@@ -62,6 +65,86 @@ class Quantity(Enum):
     def range_label(self) -> str:
         """Bezeichnung des Messbereichs fuer Protokollausgaben."""
         return "Spannungsbereich" if self is Quantity.VOLTAGE else "Strombereich"
+
+    # UEBERARBEITET (RANGEIO-2): Die Einheit eines Strombereichs haengt von der
+    # Eingangsart ab - direkt in Ampere, am externen Sensor in Volt.
+    def unit(self, sensor: bool = False) -> str:
+        """Einheit des Bereichswerts fuer diese Messgroesse."""
+        if self is Quantity.VOLTAGE:
+            return "V"
+        return "V" if sensor else "A"
+
+
+# ---------------------------------------------------------------------------
+# UEBERARBEITET (RANGEIO-2): Bereichswert samt Eingangsart
+# ---------------------------------------------------------------------------
+
+# Kurzform, mit der das Geraet den Sensoreingang meldet ('EXT'/'EXTERNAL').
+# Die Pruefung laeuft bewusst nur in EINE Richtung (Antwort beginnt mit 'EXT'):
+# kein anderer Bereichswert dieser Gruppe faengt so an, ein beidseitiges
+# Praefixmatching waere hier also unnoetiges Risiko.
+_SENSOR_PREFIX: Final[str] = "EXT"
+
+
+@dataclass(frozen=True)
+class RangeValue:
+    """Ein eingestellter Messbereich einschliesslich der Eingangsart.
+
+    Elemente 1-3 dieses Aufbaus haengen an externen Stromsensoren. Fuer sie
+    antwortet ':INPut:CURRent:RANGe:ELEMent<x>?' mit 'EXTERNAL,10.00E+00' -
+    der Bereich ist dann die Sensoreingangsspannung in VOLT, nicht ein Strom
+    in Ampere. Beide Faelle in einem blanken float zu fuehren, war die
+    Ursache dafuer, dass RangeBackup.capture() auf diesem Aufbau abbrach; ein
+    blindes Zurueckschreiben des Zahlenwerts in die falsche Eingangsart waere
+    ausserdem eine echte Fehlkonfiguration.
+    """
+
+    value: float
+    sensor: bool = False
+
+    def unit(self, quantity: "Quantity") -> str:
+        """Einheit dieses Werts fuer die angegebene Messgroesse."""
+        return quantity.unit(self.sensor)
+
+    def describe(self, quantity: "Quantity") -> str:
+        """Lesbare Kurzform, z.B. '10 V (Sensor)'."""
+        art = " (Sensor)" if self.sensor else ""
+        return f"{self.value:g} {self.unit(quantity)}{art}"
+
+
+def parse_range_value(response: str, context: str = "") -> RangeValue:
+    """Antwort eines RANGe-Knotens auswerten - direkt oder Sensoreingang.
+
+    'EXTERNAL,10.00E+00' -> RangeValue(10.0, sensor=True)
+    '30.0E+00'           -> RangeValue(30.0, sensor=False)
+
+    Geraeteunabhaengig und damit ohne Verbindung testbar.
+    """
+    text = strip_response_header(response)
+    token = text.upper()
+    if token.startswith(_SENSOR_PREFIX):
+        _, separator, volts = token.partition(",")
+        if not separator:
+            suffix = f" ({context})" if context else ""
+            raise WTError(
+                f"Sensorbereich ohne Wert in der Antwort {response!r}{suffix} - "
+                "erwartet 'EXTERNAL,<Volt>'"
+            )
+        return RangeValue(parse_nr3(volts, context), sensor=True)
+    return RangeValue(parse_nr3(text, context), sensor=False)
+
+
+def ranges_match(
+    requested: RangeValue, actual: RangeValue, tolerance: float = 1e-3
+) -> bool:
+    """Zwei Bereichswerte vergleichen - Eingangsart zaehlt mit.
+
+    10 A direkt und 10 V am Sensoreingang sind NICHT derselbe Zustand, auch
+    wenn der Zahlenwert uebereinstimmt.
+    """
+    if requested.sensor != actual.sensor:
+        return False
+    return values_match(requested.value, actual.value, tolerance)
 
 
 # ---------------------------------------------------------------------------
@@ -144,17 +227,23 @@ class RangeAccess:
 
     # -- Lesen --------------------------------------------------------------
 
-    def get_range(self, quantity: Quantity, element: int) -> float:
-        """Eingestellten Messbereich eines Elements lesen."""
+    # UEBERARBEITET (RANGEIO-2): Rueckgabe ist jetzt RangeValue statt float,
+    # damit der Sensoreingang nicht mehr in parse_nr3() abstuerzt.
+    def get_range(self, quantity: Quantity, element: int) -> RangeValue:
+        """Eingestellten Messbereich eines Elements lesen.
+
+        Antwortet das Element mit 'EXTERNAL,<Volt>', wird der Wert als
+        Sensorbereich gekennzeichnet zurueckgegeben.
+        """
         response = self._session.query(f"{quantity.value}:RANGe:ELEMent{element}?")
-        return parse_nr3(response, f"{quantity.range_label} Element {element}")
+        return parse_range_value(response, f"{quantity.range_label} Element {element}")
 
     def get_auto(self, quantity: Quantity, element: int) -> bool:
         """Autorange-Zustand eines Elements lesen."""
         response = self._session.query(f"{quantity.value}:AUTO:ELEMent{element}?")
         return parse_boolean(response, f"Autorange {quantity.label} Element {element}")
 
-    def get_ranges(self, quantity: Quantity) -> dict[int, float]:
+    def get_ranges(self, quantity: Quantity) -> dict[int, RangeValue]:  # UEBERARBEITET (RANGEIO-2)
         """Messbereiche aller Elemente lesen."""
         return {e: self.get_range(quantity, e) for e in self._elements}
 
@@ -191,7 +280,14 @@ class RangeAccess:
 
     # -- Schreiben ----------------------------------------------------------
 
-    def set_range(self, quantity: Quantity, scope: str | int, value: float) -> str:
+    # UEBERARBEITET (RANGEIO-2): nimmt jetzt auch einen Sensorbereich entgegen.
+    def set_range(
+        self,
+        quantity: Quantity,
+        scope: str | int,
+        value: float | RangeValue,
+        sensor: bool = False,
+    ) -> str:
         """Messbereich setzen. Rueckgabe: das gesendete Kommando.
 
         Der Scope darf ein Element, eine Wiring-Unit oder ALL sein. Ob das
@@ -199,8 +295,25 @@ class RangeAccess:
         ihn ablehnt, ist NICHT vorausgesetzt - deshalb liefert dieses Modul
         nur das Kommando zurueck und ueberlaesst die Kontrolle dem Verify in
         wt3000_ranging.py.
+
+        sensor=True setzt den Bereich des externen Stromsensoreingangs; der
+        Wert ist dann eine SPANNUNG in Volt und das Kommando lautet
+        ':INPut:CURRent:RANGe:ELEMent<x> EXTernal,<Volt>'. Wird ein RangeValue
+        uebergeben, bestimmt dessen Kennzeichen die Eingangsart.
+
+        ZU VERIFIZIEREN: ob das Geraet die reine NRf-Form ('10') erwartet oder
+        die Einheitenschreibweise ('10V'), die wt3000_input verwendet.
         """
-        command = f"{quantity.value}:RANGe{scope_suffix(scope)} {format_nrf(value)}"
+        if isinstance(value, RangeValue):
+            sensor = value.sensor
+            value = value.value
+        if sensor and quantity is Quantity.VOLTAGE:
+            raise WTError(
+                "Ein Sensorbereich existiert nur fuer den Stromeingang - "
+                ":INPut:VOLTage:RANGe kennt kein 'EXTernal'"
+            )
+        parameter = f"EXTernal,{format_nrf(value)}" if sensor else format_nrf(value)
+        command = f"{quantity.value}:RANGe{scope_suffix(scope)} {parameter}"
         self._write(command)
         return command
 
