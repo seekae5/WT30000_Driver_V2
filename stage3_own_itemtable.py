@@ -29,9 +29,7 @@ from wt3000_itemspec import (
 )
 from wt3000_numeric import ItemTable, NumericItem, ValueStatus, read_numeric_values
 
-# ---------------------------------------------------------------------------
-# Zieltabelle - hier anpassen
-# ---------------------------------------------------------------------------
+
 # Passend zur vorgefundenen Verdrahtung V3A3,P1W2:
 #   Elemente 1-3 = Drehstromseite (Wiring-Unit SigmaA)
 #   Element 4    = separater DC-Kanal (Wiring-Unit SigmaB)
