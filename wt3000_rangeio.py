@@ -2,6 +2,14 @@
 # Datei: wt3000_rangeio.py
 # Layer 2 - Typisierter Zugriff auf die Messbereichsknoten der INPut-Gruppe.
 #
+#Aenderung 1: 18.08.26 -> Neu: RangeValue(value, sensor) —
+#                           Bereichswert mit Eingangsart; parse_range_value() versteht EXTERNAL,<V>;
+#                           ranges_match() (10 A direkt ≠ 10 V Sensor); Quantity.unit(sensor)
+#                       -> get_range()/get_ranges() liefern jetzt RangeValue statt float → der Abbruch in parse_nr3() entfällt.
+#                       -> set_range(..., sensor=False) bzw. set_range(..., RangeValue) sendet EXTernal,<Volt>;
+#                           Sensorbereich auf dem Spannungspfad wird abgelehnt.
+#
+#
 # Dieses Modul ist das Gegenstueck zu wt3000_numeric.py, nur fuer ':INPut'
 # statt ':NUMeric'. Es kennt die SCPI-Pfade und die Antwortformate - mehr
 # nicht. Kein Backup, kein Verify, keine Ablaufsteuerung; das ist Aufgabe von

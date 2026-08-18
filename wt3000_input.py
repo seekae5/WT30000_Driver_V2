@@ -1,6 +1,20 @@
 # =============================================================================
 # Datei: wt3000_input.py
 # Layer 2 (Erweiterung) - Eingangs- und Messkonfiguration
+
+#Aenderung 1: 18.08.26 -> _token_match() entfernt;
+#                           ersetzt durch eine Regel: canonical_enum_token() + enum_match() normalisieren
+#                           beide Seiten auf die Langform der Aufzählung (SYNC_TOKENS, MODE_TOKENS) und vergleichen
+#                           exakt. Mehrdeutige Kurzformen (U → U1..U4) gelten bewusst als Abweichung statt als Treffer.
+#
+#                       -> _diff_element(): U-Mode, I-Mode, Sync über compare_enum statt compare_plain.
+#                       -> restore_input_snapshot(): Sync über dieselbe Regel; zusätzlich wird der Messmodus jetzt tatsächlich zurückgestellt
+#                           (vorher verglichen, aber nie geschrieben → Schlusskontrolle konnte nicht konvergieren). Ist GROUP_MODE gesperrt,
+#                           meldet _restore_mode() das im Klartext, statt mitten im Restore abzubrechen.
+#                        -> set_sync_source() / _set_mode() verwenden für die Rückleseprobe dieselbe Regel.
+#                        -> Docstring: empfohlene Freigabe jetzt unlocked(GROUP_RANGE, GROUP_FILTER, GROUP_MODE, GROUP_RATE).
+#
+#
 #
 # Deckt die bisher fehlenden Stellgroessen ab:
 #   Verdrahtung, Spannungsbereich, Strombereich (direkt + Sensoreingang),

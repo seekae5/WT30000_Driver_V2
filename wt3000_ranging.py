@@ -3,6 +3,19 @@
 # Layer 3 - Messbereiche deklarativ beschreiben, sichern, setzen, verifizieren
 #           und vollstaendig zurueckstellen.
 #
+#Aenderung 1: 18.08.26 -> ElementRangeState führt RangeValue; neu range_of(),
+#                           value_of() bleibt als Zahlenwert erhalten.
+#                       -> to_dict() schreibt current_sensor;
+#                           from_dict() liest alte Backups weiter (Default = Direkteingang).
+#                       -> diff(), verify_plan(), probe_write_capability(),
+#                           restore_ranges() vergleichen über ranges_match();
+#                           log_summary() zeigt Einheit + Eingangsart.
+#                       -> RangeSpec bekommt sensor: bool = False;
+#                           RangePlan.validate() prüft die Eingangsart vor dem
+#                           ersten Set-Kommando gegen das Gerät (max. 4 Abfragen) — verhindert das von
+#                           ANALYSE §3.1 benannte Zurückschreiben eines Amperewerts an einem Sensoreingang.
+#
+#
 # Verhaeltnis zu wt3000_rangeio.py wie wt3000_itemspec.py zu wt3000_numeric.py:
 # dort die SCPI-Knoten, hier der Ablauf.
 #
